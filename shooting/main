@@ -1,0 +1,13 @@
+#!/bin/bash
+
+source ../common/common
+source ./map
+
+init_tty
+
+init_map
+
+IFS= read -s -n 1 key
+
+quit_tty
+

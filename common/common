@@ -1,0 +1,78 @@
+#!/bin/bash
+
+ECHO() {
+	echo -e "$@"
+}
+
+cls() {
+	ECHO '\033[H\033[2J\c'
+}
+
+getchar() {
+	dd bs=1 count=1 2> /dev/null
+}
+
+cursol(){
+	ECHO '\033['$2';'$1'H\c'
+}
+
+beep() {
+	ECHO '\07\c'
+}
+
+new_screen() {
+	ECHO '\e7\033[?47h\c'
+}
+
+exit_screen() {
+	ECHO '\033[?47l\e8\c'
+}
+
+init_tty() {
+#	stty -icanon -echo min 1 -ixon
+	tput civis # hidden cursol
+	cls
+	new_screen
+}
+
+quit_tty() {
+	tput reset
+	cls
+	exit_screen
+#	stty icanon echo eof '^d' ixon
+}
+
+# trap
+
+if (trap '' INT) 2> /dev/null
+then
+	SIGINT=INT SIGQUIT=QUIT SIGTERM=TERM SIGSTP=TSTP
+else
+	SIGINT=2 SIGQUIT=3 SIGTERM=15 SIGSTP=18
+fi
+
+# Random
+
+random_short() {
+	eval $1=$RANDOM
+}
+
+rand() {
+	random_short rand_val
+	rand_val=`expr $rand_val % 256 \* \( "$3" - "$2" + 1 \) / 256 + "$2"`
+	eval $1=$rand_val
+}
+
+# Scroll
+
+partial_scroll() {
+	ECHO '\033['$1';'$2'r\c'
+}
+
+partial_scroll_off() {
+	ECHO '\033[r\c'
+}
+
+scroll_up() {
+	ECHO '\033M\c'
+}

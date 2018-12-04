@@ -1,53 +1,6 @@
 #!/bin/bash
 
-ECHO() {
-	echo -e "$@"
-}
-
-cls() {
-	ECHO '\033[H\033[2J\c'
-}
-
-getchar() {
-	dd bs=1 count=1 2> /dev/null
-}
-
-cursol(){
-	ECHO '\033['$2';'$1'H\c'
-}
-
-beep() {
-	ECHO '\07\c'
-}
-
-new_screen() {
-	ECHO '\033\067\033[?47h\c'
-}
-
-exit_screen() {
-	ECHO '\033[?47l\033\070\c'
-}
-
-init_tty() {
-	stty -icanon -echo min 1 -ixon
-	cls
-	new_screen
-}
-
-quit_tty() {
-	cls
-	exit_screen
-	stty icanon echo eof '^d' ixon
-}
-
-# trap
-
-if (trap '' INT) 2> /dev/null
-then
-	SIGINT=INT SIGQUIT=QUIT SIGTERM=TERM SIGSTP=TSTP
-else
-	SIGINT=2 SIGQUIT=3 SIGTERM=15 SIGSTP=18
-fi
+source ../common/common
 
 # program
 
@@ -77,11 +30,22 @@ init_map
 x=40
 y=12
 
+old_sec=$SECONDS
+
 while :
 do
 	cursol $x $y
-	key=`getchar`
+	key=timeout
+	if [ $SECONDS = $old_sec ]; then
+		IFS= read -s -n 1 -t 1 key
+	fi
 	case "$key" in
+		timeout)
+			old_sec=$SECONDS
+			if ((y < 23)); then
+				y=$((y + 1))
+			fi
+			;;
 		q)
 			break
 			;;
